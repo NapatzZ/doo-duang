@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#120a24">
+<title>ดูดวงลายมือ</title>
+<meta name="description" content="ส่องลายมือ ทำนายชะตา เพียงถ่ายรูปฝ่ามือของคุณ">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500&family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #120a24;
+    --bg-2: #1e1238;
+    --gold: #e9c46a;
+    --gold-soft: rgba(233, 196, 106, .35);
+    --text: #f3ecff;
+    --muted: #b7a8d6;
+    --card: rgba(255, 255, 255, .06);
+    --border: rgba(233, 196, 106, .25);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    background: radial-gradient(ellipse at top, var(--bg-2), var(--bg) 70%) fixed, var(--bg);
+    color: var(--text);
+    font-family: "Sarabun", system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  /* starfield */
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+      radial-gradient(1px 1px at 12% 18%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 78% 12%, #fff 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 45% 32%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 88% 48%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 22% 62%, #fff 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 65% 78%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 8% 88%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 92% 90%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 52% 6%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 33% 92%, #fff 50%, transparent 51%);
+    opacity: .7;
+    animation: twinkle 4s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { to { opacity: .3; } }
+
+  h1, h2, .btn { font-family: "Mitr", "Sarabun", sans-serif; font-weight: 500; }
+
+  .screen {
+    position: relative; z-index: 1;
+    min-height: 100dvh;
+    display: none; flex-direction: column; align-items: center;
+    padding: calc(24px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+    max-width: 480px; margin: 0 auto;
+  }
+  .screen.active { display: flex; animation: fadeIn .4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; min-height: 54px; padding: 14px 20px;
+    border: 0; border-radius: 999px; cursor: pointer;
+    font-size: 18px; color: #2a1a00;
+    background: linear-gradient(135deg, #f6dd96, var(--gold) 50%, #c9973a);
+    box-shadow: 0 6px 24px rgba(233, 196, 106, .35);
+    transition: transform .15s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn.ghost {
+    background: transparent; color: var(--gold);
+    border: 1px solid var(--border); box-shadow: none;
+  }
+
+  /* ---------- Home ---------- */
+  #home { justify-content: center; text-align: center; gap: 28px; }
+  .orb {
+    width: 200px; height: 200px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.18), rgba(155, 109, 255, .15) 45%, transparent 70%);
+    border: 1px solid var(--border);
+    box-shadow: 0 0 60px rgba(155, 109, 255, .35), inset 0 0 40px rgba(233, 196, 106, .15);
+    animation: float 5s ease-in-out infinite;
+  }
+  .orb svg { width: 110px; height: 150px; }
+  @keyframes float { 50% { transform: translateY(-10px); } }
+  #home h1 { font-size: 40px; color: var(--gold); letter-spacing: .5px; text-shadow: 0 0 24px rgba(233,196,106,.4); }
+  #home p { color: var(--muted); }
+  .home-actions { width: 100%; display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+
+  /* ---------- Camera ---------- */
+  #camera { gap: 16px; }
+  .top-hint { text-align: center; }
+  .top-hint h2 { font-size: 22px; color: var(--gold); }
+  .top-hint p { color: var(--muted); font-size: 15px; }
+  .viewport {
+    position: relative; width: 100%; aspect-ratio: 3 / 4;
+    border-radius: 24px; overflow: hidden;
+    background: #000; border: 1px solid var(--border);
+  }
+  .viewport video, .viewport img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  }
+  .mirror { transform: scaleX(-1); }
+  .guide {
+    position: absolute; inset: 8% 14%; width: 72%; height: 84%;
+    pointer-events: none;
+  }
+  .guide path {
+    fill: none; stroke: var(--gold); stroke-width: 2.2;
+    stroke-dasharray: 6 6; stroke-linejoin: round; stroke-linecap: round;
+    filter: drop-shadow(0 0 6px rgba(233,196,106,.8));
+    animation: dash 20s linear infinite;
+  }
+  @keyframes dash { to { stroke-dashoffset: -240; } }
+  .cam-error {
+    position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; padding: 24px; text-align: center; color: var(--muted); font-size: 15px;
+  }
+  .cam-error.show { display: flex; }
+  .cam-controls { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; }
+  .icon-btn {
+    width: 52px; height: 52px; border-radius: 50%; border: 1px solid var(--border);
+    background: var(--card); color: var(--gold); display: grid; place-items: center; cursor: pointer;
+  }
+  .icon-btn svg { width: 24px; height: 24px; }
+  .shutter {
+    width: 78px; height: 78px; border-radius: 50%; cursor: pointer;
+    border: 4px solid var(--gold); background: transparent; padding: 5px;
+  }
+  .shutter span { display: block; width: 100%; height: 100%; border-radius: 50%; background: var(--gold); transition: transform .15s; }
+  .shutter:active span { transform: scale(.85); }
+  .flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 50; }
+  .flash.go { animation: flash .35s ease-out; }
+  @keyframes flash { 0% { opacity: .9; } 100% { opacity: 0; } }
+
+  /* ---------- Scanning ---------- */
+  #scan { gap: 20px; }
+  .scanline {
+    position: absolute; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    box-shadow: 0 0 18px 6px rgba(233,196,106,.55);
+    animation: scan 1.8s ease-in-out infinite alternate;
+  }
+  @keyframes scan { from { top: 4%; } to { top: 94%; } }
+  .tint { position: absolute; inset: 0; background: rgba(40, 10, 80, .35); }
+  .lines { position: absolute; inset: 8% 14%; width: 72%; height: 84%; }
+  .lines path {
+    fill: none; stroke-width: 3; stroke-linecap: round;
+    stroke-dasharray: 300; stroke-dashoffset: 300;
+    filter: drop-shadow(0 0 6px currentColor);
+  }
+  .lines path.on { animation: draw 1.4s ease forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .scan-status { text-align: center; min-height: 60px; }
+  .scan-status h2 { font-size: 20px; color: var(--gold); }
+  .scan-status p { color: var(--muted); font-size: 15px; }
+  .progress { width: 100%; height: 6px; border-radius: 99px; background: var(--card); overflow: hidden; }
+  .progress div { height: 100%; width: 0; background: linear-gradient(90deg, #9b6dff, var(--gold)); border-radius: 99px; transition: width .4s ease; }
+
+  /* ---------- Result ---------- */
+  #result { gap: 20px; }
+  .result-head { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+  .thumb {
+    width: 110px; height: 110px; border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--gold); box-shadow: 0 0 30px rgba(233,196,106,.4);
+  }
+  .result-head h2 { font-size: 26px; color: var(--gold); }
+  .result-head small { color: var(--muted); }
+  .card {
+    width: 100%; padding: 22px 20px; border-radius: 20px;
+    background: var(--card); border: 1px solid var(--border);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  .card p + p { margin-top: 12px; }
+  .reveal > * { opacity: 0; transform: translateY(10px); animation: fadeIn .6s ease forwards; }
+  .result-actions { width: 100%; display: flex; flex-direction: column; gap: 12px; margin-top: auto; }
+
+  .hidden-input { display: none; }
+</style>
+</head>
+<body>
+
+<!-- ========== HOME ========== -->
+<section id="home" class="screen active">
+  <div class="orb">
+    <svg viewBox="0 0 170 280" aria-hidden="true">
+      <path d="M62 272C58 240 56 220 50 206C38 192 20 170 12 152C6 138 20 126 32 138C42 148 52 160 58 166L58 46C58 30 82 30 82 46L82 102Q84 108 86 102L86 26C86 8 110 8 110 26L110 102Q112 108 114 102L114 38C114 22 138 22 138 38L138 108Q140 114 142 108L142 72C142 58 162 58 162 72L162 150C162 190 156 230 150 272"
+        fill="none" stroke="#e9c46a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M68 210C80 180 92 160 100 130" fill="none" stroke="#c9a6ff" stroke-width="3" stroke-linecap="round"/>
+      <path d="M62 150C90 158 120 160 150 148" fill="none" stroke="#ff9ecb" stroke-width="3" stroke-linecap="round"/>
+      <path d="M60 125C85 130 120 128 158 118" fill="none" stroke="#8fe3ff" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div>
+    <h1>ดูดวงลายมือ</h1>
+    <p>ส่องเส้นลายมือ เผยชะตาชีวิตของคุณ<br>เพียงถ่ายรูปฝ่ามือ</p>
+  </div>
+  <div class="home-actions">
+    <button class="btn" id="startBtn">✋ เริ่มดูดวง</button>
+  </div>
+</section>
+
+<!-- ========== CAMERA ========== -->
+<section id="camera" class="screen">
+  <div class="top-hint">
+    <h2>วางฝ่ามือให้อยู่ในกรอบ</h2>
+    <p>หงายฝ่ามือ แบนิ้วออก ในที่ที่มีแสงสว่าง</p>
+  </div>
+  <div class="viewport">
+    <video id="video" playsinline autoplay muted></video>
+    <svg class="guide" viewBox="0 0 170 280" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <path d="M62 272C58 240 56 220 50 206C38 192 20 170 12 152C6 138 20 126 32 138C42 148 52 160 58 166L58 46C58 30 82 30 82 46L82 102Q84 108 86 102L86 26C86 8 110 8 110 26L110 102Q112 108 114 102L114 38C114 22 138 22 138 38L138 108Q140 114 142 108L142 72C142 58 162 58 162 72L162 150C162 190 156 230 150 272"/>
+    </svg>
+    <div class="cam-error" id="camError">
+      <p>ไม่สามารถเปิดกล้องได้<br>กรุณาอนุญาตการใช้กล้อง หรือถ่ายรูป/เลือกรูปแทน</p>
+      <button class="btn" id="fallbackBtn" style="max-width:240px">📷 ถ่ายรูป / เลือกรูป</button>
+    </div>
+  </div>
+  <div class="cam-controls">
+    <button class="icon-btn" id="backBtn" aria-label="ย้อนกลับ">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <button class="shutter" id="shutterBtn" aria-label="ถ่ายรูป"><span></span></button>
+    <button class="icon-btn" id="flipBtn" aria-label="สลับกล้อง">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></svg>
+    </button>
+  </div>
+  <input type="file" accept="image/*" capture="environment" class="hidden-input" id="fileInput">
+</section>
+
+<!-- ========== SCANNING ========== -->
+<section id="scan" class="screen">
+  <div class="viewport">
+    <img id="scanImg" alt="">
+    <div class="tint"></div>
+    <svg class="lines" viewBox="0 0 170 280" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <path id="ln1" d="M68 215C78 190 88 168 100 132" style="color:#c9a6ff;stroke:#c9a6ff"/>
+      <path id="ln2" d="M60 150C90 158 120 160 150 146" style="color:#8fe3ff;stroke:#8fe3ff"/>
+      <path id="ln3" d="M58 124C85 130 120 128 158 116" style="color:#ff9ecb;stroke:#ff9ecb"/>
+      <path id="ln4" d="M104 250C102 220 100 190 98 160" style="color:#e9c46a;stroke:#e9c46a"/>
+    </svg>
+    <div class="scanline"></div>
+  </div>
+  <div class="scan-status">
+    <h2 id="scanTitle">กำลังส่องลายมือ...</h2>
+    <p id="scanSub">โปรดรอสักครู่</p>
+  </div>
+  <div class="progress"><div id="bar"></div></div>
+</section>
+
+<!-- ========== RESULT ========== -->
+<section id="result" class="screen">
+  <div class="result-head reveal">
+    <img class="thumb" id="resultImg" alt="ฝ่ามือของคุณ">
+    <h2 id="resultTitle"></h2>
+    <small id="resultDate"></small>
+  </div>
+  <div class="card reveal" id="resultBody"></div>
+  <div class="result-actions">
+    <button class="btn" id="shareBtn">✨ แชร์ให้เพื่อน</button>
+    <button class="btn ghost" id="againBtn">ดูดวงอีกครั้ง</button>
+  </div>
+</section>
+
+<div class="flash" id="flash"></div>
+
+<script>
+/* =========================================================
+   ✏️ แก้คำทำนายตรงนี้ (EDIT YOUR FIXED RESULT HERE)
+   - title: หัวข้อผลลัพธ์
+   - paragraphs: แต่ละบรรทัดคือ 1 ย่อหน้า
+   ========================================================= */
+const RESULT = {
+  title: "คำทำนายของคุณ",
+  paragraphs: [
+    "ใส่คำทำนายของคุณที่นี่",
+  ],
+};
+
+/* ---------- scanning steps (ข้อความระหว่างวิเคราะห์) ---------- */
+const STEPS = [
+  { t: "กำลังอ่านเส้นชีวิต...",   s: "Life line",  line: "ln1" },
+  { t: "กำลังอ่านเส้นสมอง...",    s: "Head line",  line: "ln2" },
+  { t: "กำลังอ่านเส้นหัวใจ...",   s: "Heart line", line: "ln3" },
+  { t: "กำลังอ่านเส้นวาสนา...",   s: "Fate line",  line: "ln4" },
+  { t: "กำลังเปิดไพ่ชะตา...",     s: "เกือบเสร็จแล้ว", line: null },
+];
+const STEP_MS = 1300;
+
+const $ = (id) => document.getElementById(id);
+const video = $("video");
+let stream = null;
+let facing = "environment";
+let photoURL = "";
+
+function show(id) {
+  document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("active", s.id === id));
+  window.scrollTo(0, 0);
+}
+
+async function startCamera() {
+  stopCamera();
+  $("camError").classList.remove("show");
+  try {
+    if (!navigator.mediaDevices?.getUserMedia) throw new Error("unsupported");
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 1706 } },
+      audio: false,
+    });
+    video.srcObject = stream;
+    video.classList.toggle("mirror", facing === "user");
+    await video.play().catch(() => {});
+  } catch (e) {
+    $("camError").classList.add("show");
+  }
+}
+
+function stopCamera() {
+  if (stream) stream.getTracks().forEach((t) => t.stop());
+  stream = null;
+  video.srcObject = null;
+}
+
+function capture() {
+  if (!stream || !video.videoWidth) { $("fileInput").click(); return; }
+  const c = document.createElement("canvas");
+  c.width = video.videoWidth;
+  c.height = video.videoHeight;
+  const ctx = c.getContext("2d");
+  if (facing === "user") { ctx.translate(c.width, 0); ctx.scale(-1, 1); }
+  ctx.drawImage(video, 0, 0);
+  const f = $("flash");
+  f.classList.remove("go"); void f.offsetWidth; f.classList.add("go");
+  if (navigator.vibrate) navigator.vibrate(40);
+  photoURL = c.toDataURL("image/jpeg", 0.85);
+  stopCamera();
+  runScan();
+}
+
+function runScan() {
+  $("scanImg").src = photoURL;
+  $("resultImg").src = photoURL;
+  document.querySelectorAll(".lines path").forEach((p) => p.classList.remove("on"));
+  $("bar").style.width = "0";
+  show("scan");
+  STEPS.forEach((step, i) => {
+    setTimeout(() => {
+      $("scanTitle").textContent = step.t;
+      $("scanSub").textContent = step.s;
+      $("bar").style.width = ((i + 1) / STEPS.length) * 100 + "%";
+      if (step.line) $(step.line).classList.add("on");
+    }, i * STEP_MS);
+  });
+  setTimeout(showResult, STEPS.length * STEP_MS + 400);
+}
+
+function showResult() {
+  $("resultTitle").textContent = RESULT.title;
+  $("resultDate").textContent = new Date().toLocaleDateString("th-TH", { dateStyle: "long" });
+  const body = $("resultBody");
+  body.innerHTML = "";
+  RESULT.paragraphs.forEach((txt, i) => {
+    const p = document.createElement("p");
+    p.textContent = txt;
+    body.appendChild(p);
+  });
+  show("result");
+}
+
+/* ---------- events ---------- */
+$("startBtn").onclick = () => { show("camera"); startCamera(); };
+$("backBtn").onclick = () => { stopCamera(); show("home"); };
+$("flipBtn").onclick = () => { facing = facing === "environment" ? "user" : "environment"; startCamera(); };
+$("shutterBtn").onclick = capture;
+$("fallbackBtn").onclick = () => $("fileInput").click();
+$("fileInput").onchange = (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => { photoURL = reader.result; stopCamera(); runScan(); };
+  reader.readAsDataURL(file);
+  e.target.value = "";
+};
+$("againBtn").onclick = () => { show("camera"); startCamera(); };
+$("shareBtn").onclick = async () => {
+  const data = { title: "ดูดวงลายมือ", text: "มาดูดวงลายมือกัน ✋✨", url: location.href };
+  try {
+    if (navigator.share) await navigator.share(data);
+    else { await navigator.clipboard.writeText(location.href); alert("คัดลอกลิงก์แล้ว"); }
+  } catch (_) {}
+};
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) stopCamera();
+  else if ($("camera").classList.contains("active")) startCamera();
+});
+</script>
+</body>
+</html>
